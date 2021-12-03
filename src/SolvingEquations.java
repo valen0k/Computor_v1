@@ -1,5 +1,16 @@
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Stack;
+
 public class SolvingEquations {
 
+    private String errorMsg;
+    private String equation;
+    private String leftEquation;
+    private String rightEquation;
+    private HashMap<Integer, Double> leftDegree;
+    private HashMap<Integer, Double> rightDegree;
     private double thirdOrMoreDegree;
     private double secondDegree;
     private double firstDegree;
@@ -8,85 +19,98 @@ public class SolvingEquations {
     private double firstSolution;
     private double secondSolution;
     private double singleSolution;
+    private boolean thirdOrMoreRoots;
     private boolean twoRoots;
     private boolean oneRoot;
     private boolean noRoots;
 
-    public SolvingEquations() {
+    public SolvingEquations(String equation) {
         thirdOrMoreDegree = 0;
         secondDegree = 0;
         firstDegree = 0;
         zeroDegree = 0;
+        thirdOrMoreRoots = false;
         twoRoots = false;
         oneRoot = false;
         noRoots = false;
+        this.equation = equation;
     }
 
-    public double getThirdOrMoreDegree() {
-        return thirdOrMoreDegree;
+    private void sorting(char[] equation, HashMap<Integer, Double> anyEquation) throws Exception {
+        StringBuilder bufNumber;
+        boolean dot;
+        double flag;
+        for (int i = 0; i < equation.length; i++) {
+            bufNumber = new StringBuilder();
+            dot = false;
+            switch (equation[i]) {
+                case '-':
+                    flag = -1;
+                    ++i;
+                    break;
+                case '+':
+                    ++i;
+                    flag = 1;
+                    break;
+                default:
+                    flag = 1;
+            } if (Character.isDigit(equation[i]) || equation[i] == 'x') {
+                while (i < equation.length && (Character.isDigit(equation[i]) || equation[i] == '.')) {
+                    if (dot || (equation[i] == '.' && bufNumber.isEmpty())) {
+                        throw new Exception("Bad number!");
+                    } else if (equation[i] == '.')
+                        dot = true;
+                    bufNumber.append(equation[i++]);
+                }
+                if (i < equation.length &&
+                        ((equation[i] == '*' && equation[i + 1] == 'x') || equation[i] == 'x')) {
+                    StringBuilder bufDegree = new StringBuilder();
+                    i += (equation[i] == '*' && equation[i + 1] == 'x') ? 2 : (equation[i] == 'x') ? 1 : 0;
+                    i += (equation[i] == '^') ? 1 : 0;
+                    if (Character.isDigit(equation[i])) {
+                        while (Character.isDigit(equation[i])) {
+                            bufDegree.append(equation[i++]);
+                        }
+                        if (anyEquation.containsKey(Integer.valueOf(bufDegree.toString()))) {
+                            double buf = anyEquation.get(Integer.valueOf(bufDegree.toString()))
+                                    + flag * Double.parseDouble(bufNumber.toString());
+                            anyEquation.put(Integer.valueOf(bufDegree.toString()), buf);
+                        } else
+                            anyEquation.put(Integer.valueOf(bufDegree.toString()),
+                                    flag * Double.parseDouble(bufNumber.toString()));
+                    } else
+                        anyEquation.put(1, flag * Double.parseDouble(bufNumber.toString()));
+                } else if (!bufNumber.isEmpty()) {
+                    if (anyEquation.containsKey(0)) {
+                        double buf = anyEquation.get(0) + flag
+                                * Double.parseDouble(bufNumber.toString());
+                        anyEquation.put(0, buf);
+                    } else
+                        anyEquation.put(0, flag * Double.parseDouble(bufNumber.toString()));
+                } else
+                    throw new Exception("Bad symbol!");
+                i--;
+            }
+        }
     }
 
-    public void setThirdOrMoreDegree(double thirdOrMoreDegree) {
-        this.thirdOrMoreDegree = thirdOrMoreDegree;
-    }
-
-    public double getSecondDegree() {
-        return secondDegree;
-    }
-
-    public void setSecondDegree(double secondDegree) {
-        this.secondDegree = secondDegree;
-    }
-
-    public double getFirstDegree() {
-        return firstDegree;
-    }
-
-    public void setFirstDegree(double firstDegree) {
-        this.firstDegree = firstDegree;
-    }
-
-    public double getZeroDegree() {
-        return zeroDegree;
-    }
-
-    public void setZeroDegree(int zeroDegree) {
-        this.zeroDegree = zeroDegree;
-    }
-
-    public void discriminant() {
+    private void discriminant() {
         discriminant = Math.pow(firstDegree, 2) - 4 * secondDegree * zeroDegree;
     }
 
-    public double getDiscriminant() {
-        return discriminant;
-    }
-
-    public void firstSolution() {
+    private void firstSolution() {
         firstSolution = (firstDegree * (-1) + Math.sqrt(discriminant)) / (2 * secondDegree);
     };
 
-    public void secondSolution() {
+    private void secondSolution() {
         secondSolution = (firstDegree * (-1) - Math.sqrt(discriminant)) / (2 * secondDegree);
     };
 
-    public void singleSolution() {
+    private void singleSolution() {
         singleSolution = firstDegree * (-1) / (2 * secondDegree);
     }
 
-    public double getSingleSolution() {
-        return singleSolution;
-    }
-
-    public double getFirstSolution() {
-        return firstSolution;
-    }
-
-    public double getSecondSolution() {
-        return secondSolution;
-    }
-
-    public void standardEquation() {
+    private void standardEquation() {
         discriminant();
         if (discriminant > 0) {
             twoRoots = true;
@@ -100,8 +124,7 @@ public class SolvingEquations {
         }
     }
 
-    public void printStandardEquation() {
-
+    private void printStandardEquation() {
         System.out.println("D = b^2 - 4ac =");
         System.out.println("= " + firstDegree + " ^2 - 4 * " + secondDegree + " * " + zeroDegree + " =");
         System.out.println("= " + discriminant);
@@ -119,11 +142,66 @@ public class SolvingEquations {
             System.out.println("= " + secondSolution);
         } else if (oneRoot) {
             System.out.println("The solution is:");
-            System.out.println("X1 = -b / 2a =");
+            System.out.println("X = -b / 2a =");
             System.out.print("= " + (-1) * secondDegree + " / 2 * " + secondDegree + " =");
             System.out.println("= " + firstSolution);
         } else {
             System.out.println("The discriminant is negative, there are no solutions!");
         }
+    }
+
+    private void solutionFirstDegreeEquation() {
+        System.out.println("The solution is:");
+        System.out.println("X = -c / b =");
+        singleSolution = (-1) * zeroDegree / firstDegree;
+        System.out.println("= (-1) * " + zeroDegree +  " / " + firstDegree + " =");
+        System.out.println("= " + singleSolution);
+    }
+
+    private void sumTwoEquations() {
+        for (int i = 0; !leftDegree.isEmpty() && !rightDegree.isEmpty(); i++) {
+            if (leftDegree.containsKey(i) && rightDegree.containsKey(i)) {
+                if (leftDegree.get(i) == rightDegree.get(i)) {
+                    leftDegree.remove(i);
+                    rightDegree.remove(i);
+                } else {
+
+                }
+            } else if (!leftDegree.containsKey(i) && rightDegree.containsKey(i)) {
+
+            } else if (leftDegree.containsKey(i) && !rightDegree.containsKey(i)) {
+
+            }
+        }
+    }
+
+    public void solve() {
+        String[] equations = equation.replace(" ", "").split("=");
+        if (equations.length != 2)
+            errorMsg = "Bad equation!";
+        else {
+            leftDegree = new HashMap<>();
+            rightDegree = new HashMap<>();
+            try {
+                sorting(equations[0].toLowerCase(Locale.ROOT).toCharArray(), leftDegree);
+                sorting(equations[1].toLowerCase(Locale.ROOT).toCharArray(), rightDegree);
+                sumTwoEquations();
+                System.out.println(leftDegree);
+                System.out.println(rightDegree);
+            } catch (Exception e) {
+                errorMsg = e.getMessage();
+            }
+
+        }
+//        if (secondDegree != 0) {
+//            System.out.println("Polynomial degree: 2");
+//            standardEquation();
+//            printStandardEquation();
+//        } else if (secondDegree == 0 && firstDegree != 0) {
+//            System.out.println("Polynomial degree: 1");
+//            solutionFirstDegreeEquation();
+//        } else {
+//            System.out.println("Incorrect equation!");
+//        }
     }
 }
