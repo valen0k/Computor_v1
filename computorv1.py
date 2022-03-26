@@ -16,6 +16,8 @@ def parse_equation(equations):
         for i in equation:
             if 'x' in i:
                 arg = i.split('x')
+                if arg[0] == '':
+                    arg[0] = 0
                 if arg[1] == '2' and arg[0] != '':
                     a += flag * float(arg[0])
                 elif (arg[1] == '1' or arg[1] == '') and arg[0] != '':
@@ -57,25 +59,28 @@ def parse(line):
 
 def print_reduced_form(a, b, c, degree):
     print("Reduced form:", end=' ')
-    if c != 0:
-        if c < 0:
-            print("-", c * -1, "* X^0", end=' ')
-        else:
-            print(c, "* X^0", end=' ')
-    if b != 0:
-        if b < 0:
-            print("-", b * -1, "* X^1", end=' ')
-        elif c != 0:
-            print("+", b, "* X^1", end=' ')
-        else:
-            print(b, "* X^1", end=' ')
-    if a != 0:
-        if a < 0:
-            print("-", a * -1, "* X^2", end=' ')
-        elif c != 0 or b != 0:
-            print("+", a, "* X^2", end=' ')
-        else:
-            print(a, "* X^2", end=' ')
+    if a == b == c == 0 and not degree:
+        print("0", end=' ')
+    else:
+        if c != 0:
+            if c < 0:
+                print("-", c * -1, "* X^0", end=' ')
+            else:
+                print(c, "* X^0", end=' ')
+        if b != 0:
+            if b < 0:
+                print("-", b * -1, "* X^1", end=' ')
+            elif c != 0:
+                print("+", b, "* X^1", end=' ')
+            else:
+                print(b, "* X^1", end=' ')
+        if a != 0:
+            if a < 0:
+                print("-", a * -1, "* X^2", end=' ')
+            elif c != 0 or b != 0:
+                print("+", a, "* X^2", end=' ')
+            else:
+                print(a, "* X^2", end=' ')
     if degree:
         for key, value in degree.items():
             if value < 0:
